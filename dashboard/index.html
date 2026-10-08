@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VectorIQ — Semantic Search & RAG Infrastructure</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%23c7a5ff%22/><stop offset=%2250%25%22 stop-color=%22%2379a2f6%22/><stop offset=%22100%25%22 stop-color=%22%23009bdc%22/></linearGradient></defs><line x1=%226%22 y1=%228%22 x2=%2222%22 y2=%228%22 stroke=%22url(%23g)%22 stroke-width=%222%22/><line x1=%226%22 y1=%228%22 x2=%2214%22 y2=%2222%22 stroke=%22url(%23g)%22 stroke-width=%222%22/><circle cx=%226%22 cy=%228%22 r=%223.5%22 fill=%22url(%23g)%22/><circle cx=%2222%22 cy=%228%22 r=%223.5%22 fill=%22url(%23g)%22/><circle cx=%2214%22 cy=%2222%22 r=%223.5%22 fill=%22url(%23g)%22/></svg>">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Collapsible Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="brand-icon">
+            <svg class="brand-logo-svg" viewBox="0 0 28 28" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="brandGradLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#c7a5ff"/>
+                  <stop offset="50%" stop-color="#79a2f6"/>
+                  <stop offset="100%" stop-color="#009bdc"/>
+                </linearGradient>
+              </defs>
+              <line x1="6" y1="8" x2="22" y2="8" stroke="url(#brandGradLogo)" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+              <line x1="6" y1="8" x2="14" y2="22" stroke="url(#brandGradLogo)" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+              <line x1="22" y1="8" x2="14" y2="22" stroke="url(#brandGradLogo)" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+              <line x1="14" y1="22" x2="22" y2="22" stroke="url(#brandGradLogo)" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+              <circle cx="6" cy="8" r="3.2" fill="url(#brandGradLogo)" />
+              <circle cx="22" cy="8" r="3.2" fill="url(#brandGradLogo)" />
+              <circle cx="14" cy="22" r="3.6" fill="url(#brandGradLogo)" />
+              <circle cx="22" cy="22" r="2.8" fill="#009bdc" />
+            </svg>
+          </div>
+          <span class="brand-name">VectorIQ</span>
+        </div>
+        <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Toggle Sidebar">
+          <span class="collapse-icon">◀</span>
+        </button>
+      </div>
+
+      <!-- Workspace Selector -->
+      <div class="workspace-selector">
+        <select class="workspace-dropdown" id="workspaceSelect">
+          <option value="prod">Production [Default]</option>
+          <option value="staging">Staging [v002-rc]</option>
+          <option value="tenant">Multi-Tenant Isolated</option>
+        </select>
+      </div>
+
+      <!-- Categorized Sidebar Navigation (6 Sections) -->
+      <nav class="sidebar-nav">
+        <!-- 1. OVERVIEW -->
+        <div class="nav-section-title">Overview</div>
+        <div class="nav-item active" data-route="overview">
+          <span class="nav-icon">❖</span>
+          <span class="nav-label">Dashboard</span>
+        </div>
+        <div class="nav-item" data-route="search">
+          <span class="nav-icon">⌕</span>
+          <span class="nav-label">Search</span>
+          <span class="nav-badge">Core</span>
+        </div>
+        <div class="nav-item" data-route="rag">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">RAG Playground</span>
+        </div>
+
+        <!-- 2. DATA -->
+        <div class="nav-section-title">Data</div>
+        <div class="nav-item" data-route="documents">
+          <span class="nav-icon">🗎</span>
+          <span class="nav-label">Documents</span>
+        </div>
+        <div class="nav-item" data-route="collections">
+          <span class="nav-icon">📁</span>
+          <span class="nav-label">Collections</span>
+          <span class="nav-badge" id="collectionsCountBadge">11</span>
+        </div>
+        <div class="nav-item" id="navUploadBtn">
+          <span class="nav-icon">⬆</span>
+          <span class="nav-label">Upload</span>
+        </div>
+
+        <!-- 3. RETRIEVAL -->
+        <div class="nav-section-title">Retrieval</div>
+        <div class="nav-item" data-route="index">
+          <span class="nav-icon">⎘</span>
+          <span class="nav-label">Vector Indexes</span>
+        </div>
+        <div class="nav-item" data-route="vectormap">
+          <span class="nav-icon">☵</span>
+          <span class="nav-label">Vector Map</span>
+          <span class="nav-badge">2D</span>
+        </div>
+        <div class="nav-item" data-route="analytics">
+          <span class="nav-icon">⏱</span>
+          <span class="nav-label">Query Analytics</span>
+        </div>
+
+        <!-- 4. EVALUATION -->
+        <div class="nav-section-title">Evaluation</div>
+        <div class="nav-item" data-route="evaluation">
+          <span class="nav-icon">☍</span>
+          <span class="nav-label">Benchmarks</span>
+        </div>
+
+        <!-- 5. INFRASTRUCTURE -->
+        <div class="nav-section-title">Infrastructure</div>
+        <div class="nav-item" data-route="observability">
+          <span class="nav-icon">∿</span>
+          <span class="nav-label">System Health</span>
+        </div>
+
+        <!-- 6. ADMINISTRATION -->
+        <div class="nav-section-title">Administration</div>
+        <div class="nav-item" data-route="settings">
+          <span class="nav-icon">⚙</span>
+          <span class="nav-label">Settings</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-pill">
+          <span class="pulse-dot"></span>
+          <span id="sidebarStatusText">SYSTEM OPERATIONAL</span>
+        </div>
+        <div class="sidebar-footer-detail" style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); font-family:var(--font-mono);">
+          <span>INDEX: <strong id="sidebarIndexVersion" style="color:var(--brand-violet);">v002</strong></span>
+          <span>512-DIM</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="breadcrumbs">
+            <span>VectorIQ</span>
+            <span>/</span>
+            <span class="active" id="currentBreadcrumb">Overview</span>
+          </div>
+
+          <button class="command-trigger-btn" id="cmdPaletteTrigger">
+            <span>Search or command...</span>
+            <span class="kbd-shortcut">⌘K</span>
+          </button>
+        </div>
+
+        <div class="topbar-right">
+          <span class="system-status-pill" style="padding:0.25rem 0.6rem; font-size:0.75rem;">
+            <span class="pulse-dot" style="width:6px; height:6px;"></span>
+            <span style="color:var(--success); font-weight:600;">Systems Operational</span>
+          </span>
+          <span class="tag-badge accent" id="topbarLatencyBadge">P95: 5.9ms</span>
+          <span class="tag-badge font-mono" id="topbarIndexBadge">Index: v002</span>
+
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <span id="themeIcon">☼</span>
+          </button>
+
+          <button class="api-key-btn" id="authKeyModalBtn" title="Configure API Credentials">
+            <span>🔑 API Key</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Main Content -->
+      <main class="content-scroll">
+        <!-- 1. OVERVIEW VIEW -->
+        <section id="sec-overview" class="tab-pane active">
+          <div class="hero-card">
+            <div class="hero-content">
+              <div class="hero-eyebrow">
+                <span>AI Retrieval & Knowledge Infrastructure</span>
+              </div>
+              <h1 class="hero-title">
+                Semantic Intelligence for <span class="hero-gradient-phrase">Production Retrieval</span>
+              </h1>
+              <p class="hero-desc">
+                Search, evaluate and operate your AI knowledge infrastructure from a single engineering workspace.
+                Sub-10ms FAISS HNSW graph indexing, Okapi BM25 hybrid fusion, alignment reranking, and verified citation attribution.
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" onclick="window.location.hash='search'">
+                  <span>Run Search</span>
+                  <span>→</span>
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.hash='rag'">
+                  <span>Open RAG Playground</span>
+                </button>
+              </div>
+
+              <!-- Compact Live Status Row -->
+              <div class="hero-status-row">
+                <div class="hero-status-item">
+                  <span class="hero-status-label">INDEX</span>
+                  <span class="hero-status-value">ONLINE</span>
+                </div>
+                <div class="hero-status-item">
+                  <span class="hero-status-label">API</span>
+                  <span class="hero-status-value">HEALTHY</span>
+                </div>
+                <div class="hero-status-item">
+                  <span class="hero-status-label">VECTOR DB</span>
+                  <span class="hero-status-value">READY</span>
+                </div>
+                <div class="hero-status-item">
+                  <span class="hero-status-label">RERANKER</span>
+                  <span class="hero-status-value">READY</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Real Empirical Metric Cards Grid -->
+          <div class="metric-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Indexed Documents</span>
+                <span>🗎</span>
+              </div>
+              <div class="stat-value" id="statDocCount">1,000</div>
+              <div class="stat-sub">
+                <span>Capacity: 500,000+ unstructured</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Embeddings</span>
+                <span>⬡</span>
+              </div>
+              <div class="stat-value" id="statVectorCount">1,000</div>
+              <div class="stat-sub">
+                <span class="font-mono" style="color:var(--brand-blue);">512-Dimensional Dense</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Query Latency</span>
+                <span>⚡</span>
+              </div>
+              <div class="stat-value" id="statLatency">5.9<span style="font-size:1.1rem; color:var(--text-muted);">ms</span></div>
+              <div class="stat-sub">
+                <span class="stat-trend-up">P95</span>
+                <span>Hybrid + Alignment Rerank</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Relevance Gain</span>
+                <span>▲</span>
+              </div>
+              <div class="stat-value" id="statMrr">+17.3<span style="font-size:1.1rem; color:var(--text-muted);">%</span></div>
+              <div class="stat-sub">
+                <span class="stat-trend-up">+22.1% Recall</span>
+                <span>vs TF-IDF baseline</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Retrieval SLA</span>
+                <span>✓</span>
+              </div>
+              <div class="stat-value" style="color:var(--success);">100.0<span style="font-size:1.1rem; color:var(--text-muted);">%</span></div>
+              <div class="stat-sub">
+                <span>0 errors across 9,100 load requests</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Current Index</span>
+                <span>⎘</span>
+              </div>
+              <div class="stat-value" id="statActiveIndex" style="color:var(--brand-violet);">v002</div>
+              <div class="stat-sub">
+                <span class="badge badge-success">Active & Hot-Swappable</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subsystem Matrix Grid -->
+          <div class="subsystem-grid">
+            <div class="subsystem-card">
+              <div class="subsystem-info">
+                <span class="subsystem-title">FAISS Indexer</span>
+                <span class="subsystem-detail">HNSWFlat (M=32, ef=64)</span>
+              </div>
+              <span class="subsystem-badge">● ONLINE</span>
+            </div>
+            <div class="subsystem-card">
+              <div class="subsystem-info">
+                <span class="subsystem-title">Lexical Engine</span>
+                <span class="subsystem-detail">Okapi BM25 (k1=1.5, b=0.75)</span>
+              </div>
+              <span class="subsystem-badge">● SYNCED</span>
+            </div>
+            <div class="subsystem-card">
+              <div class="subsystem-info">
+                <span class="subsystem-title">Embedding Service</span>
+                <span class="subsystem-detail">all-MiniLM-L6-v2 (512D)</span>
+              </div>
+              <span class="subsystem-badge">● WARM</span>
+            </div>
+            <div class="subsystem-card">
+              <div class="subsystem-info">
+                <span class="subsystem-title">Metadata Storage</span>
+                <span class="subsystem-detail">SQLite WAL Mode (ACID)</span>
+              </div>
+              <span class="subsystem-badge">● OPTIMAL</span>
+            </div>
+          </div>
+
+          <!-- Real-Time Activity Feed -->
+          <div class="stat-card" style="margin-top: 1.5rem;">
+            <div class="stat-header">
+              <span>Live Operational Activity Stream</span>
+              <span class="font-mono" style="font-size:0.75rem; color:var(--brand-blue);">POLLING BACKEND</span>
+            </div>
+            <div id="activityStreamContainer" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem;">
+              <p style="color:var(--text-muted);">Listening for operational events...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. SEARCH & RETRIEVAL VIEW (CENTERPIECE) -->
+        <section id="sec-search" class="tab-pane">
+          <div class="search-hero-box">
+            <form id="mainSearchForm">
+              <div class="search-input-wrap">
+                <span style="font-size:1.2rem; color:var(--brand-blue);">⌕</span>
+                <input
+                  type="text"
+                  id="mainSearchInput"
+                  class="search-input-field"
+                  placeholder="Ask your knowledge base anything... e.g. How does the authentication service validate JWT tokens? (Press '/' to focus)"
+                  autocomplete="off"
+                >
+                <span class="kbd-shortcut">/</span>
+                <button type="submit" class="btn btn-primary" id="searchSubmitBtn">Search ↵</button>
+              </div>
+
+              <!-- Search Mode Switcher & Filters -->
+              <div class="search-controls">
+                <div class="mode-toggle-group">
+                  <button type="button" class="mode-btn active" data-mode="hybrid">Hybrid (Dense + BM25)</button>
+                  <button type="button" class="mode-btn" data-mode="semantic">Semantic (FAISS)</button>
+                  <button type="button" class="mode-btn" data-mode="lexical">Lexical (BM25)</button>
+                </div>
+
+                <div class="control-item">
+                  <label for="searchCollection">Collection:</label>
+                  <select id="searchCollection">
+                    <option value="">All Collections</option>
+                    <option value="cybersecurity">Cybersecurity</option>
+                    <option value="cloud">Cloud Infrastructure</option>
+                    <option value="ai">Artificial Intelligence</option>
+                    <option value="networking">Networking & Systems</option>
+                    <option value="software engineering">Software Engineering</option>
+                    <option value="finance">Finance</option>
+                    <option value="science">Science</option>
+                    <option value="documentation">Documentation</option>
+                    <option value="business">Business</option>
+                  </select>
+                </div>
+
+                <div class="control-item">
+                  <label for="searchTopK">Top K:</label>
+                  <input type="number" id="searchTopK" value="5" min="1" max="50" style="width: 55px;">
+                </div>
+
+                <div class="control-item">
+                  <label for="searchTenant">Tenant:</label>
+                  <input type="text" id="searchTenant" value="default" style="width: 80px;">
+                </div>
+
+                <div class="control-item">
+                  <input type="checkbox" id="searchRerankToggle" checked>
+                  <label for="searchRerankToggle">Alignment Reranking</label>
+                </div>
+
+                <div class="control-item">
+                  <input type="checkbox" id="searchRagToggle">
+                  <label for="searchRagToggle" style="color:var(--brand-blue); font-weight:600;">⚡ Synthesize RAG</label>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Live Retrieval Waterfall Breakdown for Query -->
+          <div id="queryWaterfallArea" style="margin-bottom: 1.5rem; display: none;"></div>
+
+          <!-- RAG Answer Banner (When enabled in search) -->
+          <div id="ragAnswerBanner" style="display: none; margin-bottom: 1.5rem;"></div>
+
+          <!-- Results Container -->
+          <div id="searchResultsArea">
+            <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+              <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">⬡</div>
+              <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Enter a query to explore semantic retrieval</h3>
+              <p style="font-size: 0.88rem; max-width: 480px; margin: 0 auto;">
+                Query vectors are mapped into 512 dimensions, searched via FAISS HNSW proximity graphs, fused with BM25 lexical scores, and calibrated with alignment rerankers.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. RAG PLAYGROUND VIEW (3-COLUMN LAYOUT) -->
+        <section id="sec-rag" class="tab-pane">
+          <!-- 9-Stage Retrieval Pipeline Track -->
+          <div class="pipeline-track">
+            <div class="pipeline-step" id="ragStageQuery"><span class="step-dot"></span><span>1. QUERY</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageEmbed"><span class="step-dot"></span><span>2. EMBEDDING (512D)</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageFaiss"><span class="step-dot"></span><span>3. VECTOR SEARCH</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageBM25"><span class="step-dot"></span><span>4. BM25 LEXICAL</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageFusion"><span class="step-dot"></span><span>5. HYBRID FUSION</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageRerank"><span class="step-dot"></span><span>6. RERANKER</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageContext"><span class="step-dot"></span><span>7. CONTEXT FENCING</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageLLM"><span class="step-dot"></span><span>8. LLM GENERATION</span></div>
+            <span class="pipeline-step-arrow">→</span>
+            <div class="pipeline-step" id="ragStageAnswer"><span class="step-dot"></span><span>9. VERIFIED CITATIONS</span></div>
+          </div>
+
+          <div class="rag-three-column-layout">
+            <!-- Left: Query & Generation Controls -->
+            <div class="rag-panel">
+              <div class="rag-panel-header">
+                <span>RAG Parameters</span>
+                <span class="rag-panel-sub">Control Center</span>
+              </div>
+              <form id="ragPlaygroundForm">
+                <div style="margin-bottom: 1rem;">
+                  <label style="display:block; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Query / User Prompt</label>
+                  <textarea id="ragPlaygroundQuery" style="width:100%; height:110px; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-md); padding:0.75rem; resize:vertical; font-size:0.88rem;" placeholder="Ask a question requiring verified citations, e.g. 'How does zero-trust authentication validate JWT claims and prevent token forgery?'"></textarea>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                  <label style="display:block; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Foundation Model</label>
+                  <select id="ragPlaygroundModel" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.45rem 0.6rem; font-size:0.82rem;">
+                    <option value="gpt-4o">OpenAI GPT-4o (Grounded Reasoning)</option>
+                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (High Alignment)</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Long-Context)</option>
+                    <option value="local-llama3">Llama-3-70B (Private / On-Prem)</option>
+                  </select>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                  <div>
+                    <label style="display:block; font-size:0.78rem; margin-bottom:0.35rem; color:var(--text-secondary);">Top Chunks (K)</label>
+                    <input type="number" id="ragPlaygroundTopK" value="5" min="1" max="15" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.4rem 0.6rem; font-size:0.82rem;">
+                  </div>
+                  <div>
+                    <label style="display:block; font-size:0.78rem; margin-bottom:0.35rem; color:var(--text-secondary);">Temperature</label>
+                    <input type="number" id="ragPlaygroundTemp" value="0.2" min="0.0" max="1.0" step="0.1" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.4rem 0.6rem; font-size:0.82rem;">
+                  </div>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                  <label style="display:block; font-size:0.78rem; margin-bottom:0.35rem; color:var(--text-secondary);">Tenant Partition</label>
+                  <input type="text" id="ragPlaygroundTenant" value="default" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.4rem 0.6rem; font-size:0.82rem;">
+                </div>
+
+                <div style="margin-bottom:1.25rem;">
+                  <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:var(--text-secondary); cursor:pointer;">
+                    <input type="checkbox" id="ragPlaygroundRerank" checked>
+                    <span>Enable Cross-Encoder Reranking</span>
+                  </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:0.65rem 1rem;">
+                  <span>Synthesize Grounded Answer</span>
+                  <span>⚡</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Center: Pipeline Visualization & Retrieved Context Inspector -->
+            <div class="rag-panel">
+              <div class="rag-panel-header">
+                <span>Retrieved Context Chunks</span>
+                <span class="tag-badge font-mono" id="ragChunksCountBadge">0 chunks</span>
+              </div>
+              <div id="ragContextInspectorArea" style="display:flex; flex-direction:column; gap:0.75rem; max-height:550px; overflow-y:auto; padding-right:0.25rem;">
+                <div style="padding:3rem 1rem; text-align:center; color:var(--text-muted);">
+                  Execute a synthesis query to inspect retrieved context chunks, token budgets, and similarity calibration.
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Synthesized Answer & Clickable Citations -->
+            <div class="rag-panel">
+              <div class="rag-panel-header">
+                <span>Synthesized Response</span>
+                <span class="tag-badge font-mono" id="ragLatencyBadge">Awaiting query</span>
+              </div>
+              <div id="ragAnswerOutput" class="rag-answer-text">
+                <p style="color:var(--text-muted);">Enter a question and run synthesis to view answers grounded in verified source documents with interactive citation attribution.</p>
+              </div>
+              <div>
+                <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); margin-bottom:0.65rem; border-top:1px solid var(--border-subtle); padding-top:0.75rem;">
+                  Attributed Sources
+                </h4>
+                <div id="ragSourcesOutput" class="rag-sources-list">
+                  <p style="font-size:0.82rem; color:var(--text-muted);">No active citations.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. VECTOR MAP VIEW (2D LIVE VECTOR SPACE EXPLORER) -->
+        <section id="sec-vectormap" class="tab-pane">
+          <div class="vector-map-wrapper">
+            <div class="vector-map-toolbar">
+              <div class="vector-map-title">
+                <span style="color:var(--brand-violet);">☵</span>
+                <span>Live 2D Semantic Vector Space Explorer</span>
+                <span class="tag-badge accent" id="vmapTotalNodes">160 Sample Nodes</span>
+              </div>
+
+              <div class="vector-map-actions">
+                <select id="vmapClusterFilter" style="background:var(--bg-app); border:1px solid var(--border-base); padding:0.3rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-secondary);">
+                  <option value="all">All Semantic Clusters</option>
+                  <option value="ai">AI / Machine Learning</option>
+                  <option value="cloud">Cloud Infrastructure</option>
+                  <option value="software engineering">Software Engineering</option>
+                  <option value="networking">Networking & Systems</option>
+                  <option value="cybersecurity">Cybersecurity</option>
+                  <option value="science">Data Science</option>
+                  <option value="finance">Finance</option>
+                </select>
+                <button class="canvas-ctrl-btn" onclick="vMap.zoom(1.2)" title="Zoom In">+</button>
+                <button class="canvas-ctrl-btn" onclick="vMap.zoom(0.8)" title="Zoom Out">−</button>
+                <button class="canvas-ctrl-btn" onclick="vMap.resetView()" title="Reset View">Reset</button>
+              </div>
+            </div>
+
+            <canvas id="vectorCanvas" class="vector-canvas"></canvas>
+            <div id="vectorTooltip" class="vector-tooltip"></div>
+          </div>
+        </section>
+
+        <!-- 5. DOCUMENT EXPLORER VIEW -->
+        <section id="sec-documents" class="tab-pane">
+          <div class="doc-split-view">
+            <!-- Left: Document Catalog -->
+            <div class="doc-list-col">
+              <div class="doc-toolbar">
+                <input type="text" id="docCatalogSearch" placeholder="Filter documents by title, tenant..." style="background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.4rem 0.75rem; font-size:0.82rem; width:220px;">
+                <button class="btn btn-primary btn-sm" onclick="App.openIngestModal()">+ Ingest Document</button>
+              </div>
+              <div class="doc-scroll-list" id="docListContainer">
+                <div style="padding:2rem; text-align:center; color:var(--text-muted);">Loading document catalog...</div>
+              </div>
+            </div>
+
+            <!-- Right: Document Inspector Drawer -->
+            <div class="doc-inspect-col" id="docInspectorPanel">
+              <div class="doc-toolbar">
+                <span style="font-weight:600; font-size:0.9rem;">Document Inspector</span>
+                <span class="tag-badge font-mono" id="inspectDocId">Select a Document</span>
+              </div>
+              <div style="flex:1; overflow-y:auto; padding:1.25rem;" id="docInspectBody">
+                <div style="padding:3rem 1rem; text-align:center; color:var(--text-muted);">
+                  Select a document from the catalog to inspect its metadata, token budgeting, and 512-dim chunk embeddings.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. COLLECTIONS VIEW -->
+        <section id="sec-collections" class="tab-pane">
+          <div class="stat-card" style="margin-bottom: 1.5rem;">
+            <div class="stat-header">
+              <span>Indexed Document Collections</span>
+              <span class="tag-badge accent" id="collectionsTotalBadge">11 Domains</span>
+            </div>
+            <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:1rem;">
+              Partitioned knowledge domains indexed with 512-dimensional embeddings and SQLite metadata tags. Click any collection card to search within that partition.
+            </p>
+            <div id="collectionsGridContainer" class="collections-grid">
+              <div style="padding:2rem; text-align:center; color:var(--text-muted);">Loading collections...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. INDEX MANAGEMENT VIEW -->
+        <section id="sec-index" class="tab-pane">
+          <div class="stat-card" style="margin-bottom: 2rem;">
+            <div class="stat-header">
+              <span>Active Index Overview</span>
+              <span class="badge badge-success">ACTIVE & PRODUCTION-READY</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1.25rem; margin:1.25rem 0;">
+              <div>
+                <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Active Version</span>
+                <strong class="font-mono" style="font-size:1.3rem; color:var(--brand-violet);" id="idxActiveVersion">v002</strong>
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Vector Dimensions</span>
+                <strong class="font-mono" style="font-size:1.3rem;" id="idxDim">512</strong>
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Graph Type & Metric</span>
+                <strong class="font-mono" style="font-size:1.3rem;">HNSWFlat • Cosine (IP)</strong>
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:var(--text-muted); display:block;">Total Vectors</span>
+                <strong class="font-mono" style="font-size:1.3rem;" id="idxVectors">1,000</strong>
+              </div>
+            </div>
+
+            <!-- Version Timeline -->
+            <div class="version-timeline" id="idxTimelineContainer">
+              <div class="timeline-node">
+                <div class="timeline-circle">v001</div>
+                <span style="font-size:0.72rem; color:var(--text-muted);">Archived</span>
+              </div>
+              <div class="timeline-connector"></div>
+              <div class="timeline-node active">
+                <div class="timeline-circle">v002</div>
+                <span style="font-size:0.72rem; color:var(--success); font-weight:700;">ACTIVE</span>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
+              <button class="btn btn-primary" onclick="App.rebuildIndex()">Compact & Rebuild Index</button>
+              <button class="btn btn-secondary" onclick="App.validateIndex()">Validate Checksums</button>
+              <button class="btn btn-danger" onclick="App.rollbackIndex()">Rollback to Previous Version</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. EVALUATION & BENCHMARKS VIEW -->
+        <section id="sec-evaluation" class="tab-pane">
+          <div class="stat-card" style="margin-bottom: 2rem;">
+            <div class="stat-header">
+              <span>Retrieval Quality Comparison (500 Ground-Truth Queries)</span>
+              <span class="font-mono" style="font-size:0.75rem; color:var(--brand-blue);">EMPIRICAL BENCHMARKS</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+              Empirical evaluation across factual, technical, ambiguous, multi-hop, long-form, keyword-heavy, semantic, and adversarial query classes.
+            </p>
+            <div id="evalChartsContainer"></div>
+          </div>
+
+          <!-- Concurrency Stress Benchmark Table -->
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>High-Concurrency Stress Benchmarks (9,100 Real Requests)</span>
+              <span class="badge badge-success">0.00% ERROR RATE SLA</span>
+            </div>
+            <div id="loadTestTableContainer" style="margin-top:1rem;"></div>
+          </div>
+        </section>
+
+        <!-- 9. QUERY ANALYTICS VIEW -->
+        <section id="sec-analytics" class="tab-pane">
+          <div class="stat-card" style="margin-bottom: 1.5rem;">
+            <div class="stat-header">
+              <span>Query Execution Analytics</span>
+              <span class="font-mono" style="font-size:0.75rem; color:var(--brand-blue);">PER-REQUEST DRILLDOWN</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem;">
+              Live record of recent search queries, latency waterfall profiles, and cache hit metrics.
+            </p>
+            <div id="queryAnalyticsList" style="display:flex; flex-direction:column; gap:0.75rem;">
+              <p style="color:var(--text-muted);">Listening for search query requests...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. INFRASTRUCTURE & OBSERVABILITY VIEW -->
+        <section id="sec-observability" class="tab-pane">
+          <!-- Real System Telemetry Cards -->
+          <div class="telemetry-grid">
+            <div class="telemetry-card">
+              <span class="telemetry-label">CPU Usage</span>
+              <span class="telemetry-val" id="obsCpuVal">—</span>
+              <span class="telemetry-sub">Host server load</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="telemetry-label">Memory RSS</span>
+              <span class="telemetry-val" id="obsMemVal">—</span>
+              <span class="telemetry-sub">Resident process RAM</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="telemetry-label">Active Threads</span>
+              <span class="telemetry-val" id="obsThreadsVal">—</span>
+              <span class="telemetry-sub">Async workers pool</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="telemetry-label">Process Uptime</span>
+              <span class="telemetry-val" id="obsUptimeVal">—</span>
+              <span class="telemetry-sub">Continuous operation</span>
+            </div>
+            <div class="telemetry-card">
+              <span class="telemetry-label">Vector RAM</span>
+              <span class="telemetry-val" id="obsVectorRamVal">—</span>
+              <span class="telemetry-sub">512D float32 vectors</span>
+            </div>
+          </div>
+
+          <div class="stat-card" style="margin-bottom: 2rem;">
+            <div class="stat-header">
+              <span>Retrieval Pipeline Latency Waterfall Breakdown</span>
+              <span class="tag-badge accent">Sub-Millisecond Profiler</span>
+            </div>
+            <div id="obsWaterfallContainer" style="margin-top:1rem;"></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>Infrastructure Observability Endpoints</span>
+              <span>📡</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-top:1rem;">
+              <div style="background:var(--bg-app); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                <div style="font-weight:600; margin-bottom:0.25rem;">Prometheus Metrics</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Standard Prometheus scrape format</div>
+                <a href="/api/v1/metrics" target="_blank" class="font-mono text-accent" style="font-size:0.82rem;">/api/v1/metrics ↗</a>
+              </div>
+              <div style="background:var(--bg-app); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                <div style="font-weight:600; margin-bottom:0.25rem;">OpenAPI / Swagger</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Interactive API documentation</div>
+                <a href="/docs" target="_blank" class="font-mono text-accent" style="font-size:0.82rem;">/docs ↗</a>
+              </div>
+              <div style="background:var(--bg-app); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                <div style="font-weight:600; margin-bottom:0.25rem;">Readiness Probe</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Kubernetes health check endpoint</div>
+                <a href="/api/v1/ready" target="_blank" class="font-mono text-accent" style="font-size:0.82rem;">/api/v1/ready ↗</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. SETTINGS & ADMINISTRATION VIEW -->
+        <section id="sec-settings" class="tab-pane">
+          <div class="stat-card" style="max-width: 620px;">
+            <h3 style="margin-bottom:1.25rem; font-size:1.05rem;">API & Security Administration</h3>
+            <div style="margin-bottom:1.25rem;">
+              <label style="display:block; font-size:0.82rem; margin-bottom:0.4rem; color:var(--text-secondary);">Authentication Header (X-API-Key)</label>
+              <input type="password" id="settingsApiKey" value="admin-secret-key-12345" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.5rem 0.75rem; font-family:var(--font-mono); font-size:0.85rem;">
+            </div>
+            <div style="margin-bottom:1.5rem;">
+              <label style="display:block; font-size:0.82rem; margin-bottom:0.4rem; color:var(--text-secondary);">Active Tenant Partition</label>
+              <input type="text" id="settingsTenant" value="default" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.5rem 0.75rem; font-family:var(--font-mono); font-size:0.85rem;">
+            </div>
+            <button class="btn btn-primary" onclick="App.saveSettings()">Save Security Configuration</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Command Palette Modal (Cmd+K) -->
+  <div class="cmd-palette-backdrop" id="cmdPalette">
+    <div class="cmd-palette-box">
+      <input type="text" id="cmdInput" class="cmd-search-input" placeholder="Type a command or search route..." autocomplete="off">
+      <div class="cmd-items-list" id="cmdItemsList">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="cmd-footer">
+        <span>↑↓ Navigate</span>
+        <span>↵ Select</span>
+        <span>ESC Close</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ingest Modal -->
+  <div class="cmd-palette-backdrop" id="ingestModal">
+    <div class="cmd-palette-box" style="padding:1.5rem;">
+      <h3 style="margin-bottom:1rem;">Ingest & Index Document</h3>
+      <form id="modalIngestForm">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Document Title</label>
+          <input type="text" id="modalDocTitle" required placeholder="e.g. Incident Response Guide" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.5rem 0.75rem;">
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Tenant ID</label>
+          <input type="text" id="modalDocTenant" value="default" style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.5rem 0.75rem;">
+        </div>
+        <div style="margin-bottom:1.25rem;">
+          <label style="display:block; font-size:0.8rem; margin-bottom:0.4rem; color:var(--text-secondary);">Raw Content</label>
+          <textarea id="modalDocText" required rows="6" placeholder="Paste raw text, markdown, or documentation here..." style="width:100%; background:var(--bg-app); border:1px solid var(--border-base); border-radius:var(--radius-sm); padding:0.5rem 0.75rem;"></textarea>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+          <button type="button" class="btn btn-secondary" onclick="App.closeIngestModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Ingest Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/charts.js"></script>
+  <script src="/static/vector_map.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

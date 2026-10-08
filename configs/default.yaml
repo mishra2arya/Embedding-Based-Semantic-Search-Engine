@@ -1,0 +1,41 @@
+chunking:
+  strategy: structure
+  target_tokens: 350
+  min_tokens: 100
+  max_tokens: 600
+  overlap_tokens: 50
+
+faiss:
+  index_type: HNSW
+  dimension: 512
+  metric: cosine
+  ef_search: 64
+  ef_construction: 200
+  m: 32
+  nlist: 1024
+  nprobe: 32
+
+retrieval:
+  semantic_weight: 0.7
+  lexical_weight: 0.3
+  candidate_k: 50
+  final_k: 10
+  rrf_k: 60
+
+embedding:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  dimension: 512
+  batch_size: 64
+  normalize: true
+  device: "cpu"
+
+rag:
+  max_context_tokens: 2048
+  max_chunks: 5
+  max_chunks_per_document: 2
+  llm_provider: "local"
+
+security:
+  rate_limit_per_minute: 120
+  max_query_length: 2000
+  max_document_size_mb: 25

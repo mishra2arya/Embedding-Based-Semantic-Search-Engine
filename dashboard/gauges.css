@@ -1,0 +1,371 @@
+/**
+ * VectorIQ — High-Precision Performance Gauges Design System
+ * Physical instrument cluster: Tachometer, Speedometer, Turbo Boost, EV Power.
+ * High-fidelity DOM + CSS + SVG gauges with metallic bezels, machined dials, and physics needles.
+ */
+
+.gauge-cluster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.gauge-instrument-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: transform var(--transition-normal), border-color var(--transition-normal);
+}
+
+.gauge-instrument-card:hover {
+  border-color: var(--brand-blue);
+  transform: translateY(-2px);
+}
+
+.gauge-instrument-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  z-index: 2;
+}
+
+.gauge-instrument-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gauge-instrument-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+/* Outer Machined Bezel Rim */
+.gauge-bezel {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #252e3d 0%, #151c27 75%, #0d121a 100%);
+  padding: 7px;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.25),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.8),
+    0 8px 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px #2a374a;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* Inner Dial Face */
+.gauge-dial {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #080c14;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 2px #101724;
+}
+
+/* Convex Glass Lens Reflection */
+.gauge-lens {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.03) 40%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Gauge SVG Canvas */
+.gauge-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Travelled Arc Track */
+.gauge-track-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.gauge-track-travelled {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+/* Dial Tick Marks & Labels */
+.gauge-tick {
+  stroke: rgba(203, 213, 225, 0.45);
+  stroke-width: 1.5;
+}
+
+.gauge-tick-major {
+  stroke: #f8fafc;
+  stroke-width: 2.2;
+}
+
+.gauge-tick-redline {
+  stroke: #ef4444;
+  stroke-width: 2.5;
+}
+
+.gauge-tick-label {
+  fill: #94a3b8;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.gauge-tick-label.redline {
+  fill: #ef4444;
+  font-weight: 700;
+}
+
+/* Needle Component */
+.gauge-needle-group {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 8;
+  transform-origin: 50% 50%;
+  transition: transform 0.22s cubic-bezier(0.12, 1, 0.2, 1);
+}
+
+.gauge-needle-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Center Chrome Pivot Hub */
+.gauge-pivot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e2e8f0 0%, #64748b 60%, #1e293b 100%);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.8);
+  border: 1px solid #334155;
+  z-index: 9;
+}
+
+/* Sub-Dial: Machined Secondary Indicator */
+.gauge-subdial {
+  position: absolute;
+  bottom: 24%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #0e1522 0%, #06090f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    0 1px 2px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.gauge-subdial-label {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.gauge-subdial-val {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brand-blue);
+}
+
+/* Peak-Hold Marker */
+.gauge-peak-marker {
+  fill: #f59e0b;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.8));
+}
+
+/* Digital Readout */
+.gauge-digital-readout {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  z-index: 2;
+}
+
+.gauge-digital-val {
+  font-family: var(--font-mono);
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.gauge-digital-unit {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-blue);
+  text-transform: uppercase;
+}
+
+.gauge-digital-caption {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Mechanical Rolling Odometer */
+.gauge-odometer {
+  display: inline-flex;
+  background: #03060a;
+  border: 1px solid #1e2938;
+  border-radius: 3px;
+  padding: 2px 4px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.9);
+  margin-top: 0.35rem;
+}
+
+.gauge-odometer-digit {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  padding: 0 2px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gauge-odometer-digit:last-child {
+  border-right: none;
+  color: #f59e0b;
+}
+
+/* Pulsing Overboost Lamp */
+.gauge-lamp {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #334155;
+  border: 1px solid #1e2938;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.gauge-lamp.active {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444, 0 0 20px rgba(239, 68, 68, 0.6);
+  animation: lampPulse 1s infinite alternate;
+}
+
+@keyframes lampPulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+/* Battery State of Charge Bar (EV Power) */
+.gauge-soc-bar {
+  width: 90px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.gauge-soc-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand-teal), var(--brand-blue));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Variant Specific Themes */
+/* 1. Tachometer: Orange sunburst radial glow */
+.gauge-dial.variant-tachometer {
+  background: radial-gradient(circle at 50% 50%, #171109 0%, #0d0905 40%, #070605 100%);
+}
+
+.gauge-dial.variant-tachometer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+/* 2. Turbo Boost: Deep Navy Dial */
+.gauge-dial.variant-boost {
+  background: radial-gradient(circle at 50% 50%, #0d1527 0%, #080d19 45%, #050810 100%);
+}
+
+/* 3. EV Power: Cyan / Deep Teal Dial */
+.gauge-dial.variant-power {
+  background: radial-gradient(circle at 50% 50%, #0a1c1d 0%, #061114 45%, #04090b 100%);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .gauge-cluster {
+    grid-template-columns: 1fr;
+  }
+}

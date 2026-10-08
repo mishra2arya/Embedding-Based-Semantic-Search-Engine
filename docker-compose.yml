@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  semantic-search-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: semantic-search-engine
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_KEY_ADMIN=admin-secret-key-12345
+      - API_KEY_OPERATOR=operator-secret-key-12345
+      - API_KEY_READONLY=readonly-secret-key-12345
+      - EMBEDDING_DIMENSION=512
+      - EMBEDDING_BATCH_SIZE=64
+      - FAISS_INDEX_TYPE=HNSW
+      - RATE_LIMIT_PER_MINUTE=120
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+    volumes:
+      - ./data:/app/data
+      - ./benchmarks:/app/benchmarks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    resources:
+      limits:
+        cpus: "4.0"
+        memory: 4096M
+      reservations:
+        cpus: "1.0"
+        memory: 1024M

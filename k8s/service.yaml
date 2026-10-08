@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-search-service
+  namespace: search-system
+  labels:
+    app: semantic-search-engine
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      name: http
+  selector:
+    app: semantic-search-engine

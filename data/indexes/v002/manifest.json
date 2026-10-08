@@ -1,0 +1,15 @@
+{
+  "index_version": "v002",
+  "created_at": "2026-09-18T06:59:42.023533+00:00",
+  "dimension": 512,
+  "index_type": "HNSW",
+  "metric": "cosine",
+  "documents": 998,
+  "vectors": 998,
+  "model": "sentence-transformers/all-MiniLM-L6-v2",
+  "checksums": {
+    "index.faiss": "412b7fd3f2623107caca02e2be290ce78a5ef7670248bbaac8d81ac4a93245c9",
+    "metadata.db": "28cf9ca5368ec131a5341714fb2044f5c212a32105857242431f2d84d6ad540b"
+  },
+  "extra": {}
+}
