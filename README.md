@@ -423,3 +423,4 @@ pytest --cov=app --cov-report=term-missing
 ## 📄 License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
+# Embedding-Based-Semantic-Search-Engine
