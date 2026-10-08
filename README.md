@@ -1,4 +1,4 @@
-# Enterprise Embedding-Based Semantic Search & RAG Platform
+# Embedding-Based Semantic Search & RAG Platform
 
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
@@ -423,5 +423,4 @@ pytest --cov=app --cov-report=term-missing
 ## 📄 License
 
 Licensed under the [Apache License, Version 2.0](LICENSE).
-# Embedding-Based-Semantic-Search-Engine
 # Embedding-Based-Semantic-Search-Engine
